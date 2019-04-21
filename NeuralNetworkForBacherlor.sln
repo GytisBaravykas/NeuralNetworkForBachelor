@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetworkForBacherlor", "NeuralNetworkForBacherlor\NeuralNetworkForBacherlor.csproj", "{C0F08943-6B15-4602-9FBC-62B6A42475C0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C0F08943-6B15-4602-9FBC-62B6A42475C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0F08943-6B15-4602-9FBC-62B6A42475C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0F08943-6B15-4602-9FBC-62B6A42475C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0F08943-6B15-4602-9FBC-62B6A42475C0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A199320A-291E-4395-86B5-AB34E32EA914}
+	EndGlobalSection
+EndGlobal

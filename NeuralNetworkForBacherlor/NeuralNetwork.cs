@@ -8,6 +8,8 @@ namespace NeuralNetworkForBacherlor
 {
     public class NeuralNetwork
     {
+        private static int errorWriteLineLimiter = 0;
+
         public List<Layer> Layers { get; set; }
         public double LearningRate { get; set; }
         public int LayerCount
@@ -82,11 +84,25 @@ namespace NeuralNetworkForBacherlor
         }
 
         //TODO: pakoreguoti pagal mano varianta - done
-        public bool Train(List<double> input, double[] output)
+        public bool Train(InputData inputData)
         {
+            List<double> input = inputData.inputs;
+            double[] output = inputData.outputs;
+
             if ((input.Count != this.Layers[0].Neurons.Count) || (output.Length != this.Layers[this.Layers.Count - 1].Neurons.Count)) return false;
 
-            Run(input);
+            double[] predictions = Run(input);
+            double error = 0;
+            for (int i = 0; i < output.Length; i++)
+            {
+                error += Math.Abs(output[i] - predictions[i]);
+            }
+
+            if (errorWriteLineLimiter++ % 5000 == 0)
+            {
+                Console.WriteLine(error);
+                errorWriteLineLimiter = 1;
+            }
 
             for (int i = 0; i < this.Layers[this.Layers.Count - 1].Neurons.Count; i++)
             {

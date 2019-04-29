@@ -5,6 +5,7 @@ namespace NeuralNetworkForBacherlor
 {
     public class Neuron
     {
+        static Random n = new Random();
         public List<Dendrite> Dendrites { get; set; }
         public double Bias { get; set; }
         public double Delta { get; set; }
@@ -20,12 +21,8 @@ namespace NeuralNetworkForBacherlor
 
         public Neuron()
         {
-            Random n = new Random(Environment.TickCount);
-            this.Bias = n.NextDouble();
-
-            this.Dendrites = new List<Dendrite>();
+            Bias = n.NextDouble();
+            Dendrites = new List<Dendrite>();
         }
     }
-
-
 }

@@ -1,133 +1,118 @@
-﻿using System;
+﻿using RestSharp;
+using RestSharp.Extensions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace NeuralNetworkForBacherlor
 {
-    class Program
+    public class Program
     {
+        //TODO: add čekuolis files
+        public static string[] Authors = new string[] {"justina maciūnaitė",
+                                                "edmundas jakilaitis",
+                                                "viktorija chockevičiūtė",
+                                                "miglė lopetaitė",
+                                                "aistė žebrauskienė",
+                                                "agnė keizikienė",
+                                                "viktorija vilcanaitė",
+                                                "neringa mikėnaitė",
+                                                "žiedūnė juškytė",
+                                                "arnas mazėtis" };
         static Random _random = new Random();
+
         static void Main(string[] args)
         {
+            var trainPath = "Train";
+            var testPath = "Test";
+            var annoFilePrefix = "Anno";
 
-            //TODO: add čekuolis files
-            var authors = new string[] {"justina maciūnaitė", "edmundas jakilaitis", "viktorija chockevičiūtė", "miglė lopetaitė", "aistė žebrauskienė", "agnė keizikienė", "viktorija vilcanaitė", "neringa mikėnaitė", "žiedūnė juškytė", "arnas mazėtis" };
 
-            var trainPath = @"C:\Users\Gytis\Desktop\DuomenysNN\Train\";
-            var testPath = @"C:\Users\Gytis\Desktop\DuomenysNN\Test\";
-            string[] trainDir = Directory.GetFiles(trainPath);
-            string[] testDir = Directory.GetFiles(testPath);
+            InputDataList trainData = new InputDataList(trainPath, annoFilePrefix);
+            InputDataList testData = new InputDataList(testPath, annoFilePrefix);
 
-            // Sumaisomi duomenys NN tinklui
-            Shuffle(trainDir);
+            Shuffle(trainData);
 
-            NeuralNetwork NeuralNet = new NeuralNetwork(0.01, new int[3]{179,5,authors.Length}); 
+            NeuralNetwork NeuralNet = new NeuralNetwork(0.001, new int[3] { 179, 5, Authors.Length });
             //179 input , 5 hidden , 11 output
 
 
-            // treniravimas - panasu reikia didinti kiekius arba apsimokymo greiti.
-            // treniravimas kol kas letas nes skaito failus -> pagalvoti alternatyvu
-            for (int x = 0; x < trainDir.Length; x++)
+            for (int i = 0; i < 1000; i++)
             {
-                var maker = new InputMaker(File.ReadAllLines(trainDir[x])[1]);
-                var author = File.ReadAllLines(trainDir[x])[0];
-                author = author.Replace(";", "");
-                author = author.Replace(",", "");
-                var inputs = maker.Inputs;
-                double[] desOutputs = new double[authors.Length];
-                for (int y = 0; y < authors.Length; y++)
+                if (i % 100 == 0)
                 {
-                    if (authors[y] == author)
-                        desOutputs[y] = 1; //Neuron index of the right author
+                    Console.WriteLine("Training set {0}.", i);
                 }
-                NeuralNet.Train(inputs, desOutputs);
-
+                foreach (var item in trainData)
+                {
+                    NeuralNet.Train(item);
+                }
             }
-
-            /*Shuffle(trainDir);
-            for (int x = 0; x < trainDir.Length; x++)
-            {
-                var maker = new InputMaker(File.ReadAllLines(trainDir[x])[1]);
-                var author = File.ReadAllLines(trainDir[x])[0];
-                author = author.Replace(";", "");
-                author = author.Replace(",", "");
-                var inputs = maker.Inputs;
-                double[] desOutputs = new double[authors.Length];
-                for (int y = 0; y < authors.Length; y++)
-                {
-                    if (authors[y] == author)
-                        desOutputs[y] = 1; //Neuron index of the right author
-                }
-
-                NeuralNet.Train(inputs, desOutputs);
-
-            }
-            Shuffle(trainDir);
-            for (int x = 0; x < trainDir.Length; x++)
-            {
-                var maker = new InputMaker(File.ReadAllLines(trainDir[x])[1]);
-                var author = File.ReadAllLines(trainDir[x])[0];
-                author = author.Replace(";", "");
-                author = author.Replace(",", "");
-                var inputs = maker.Inputs;
-                double[] desOutputs = new double[authors.Length];
-                for (int y = 0; y < authors.Length; y++)
-                {
-                    if (authors[y] == author)
-                        desOutputs[y] = 1; //Neuron index of the right author
-                }
-
-                NeuralNet.Train(inputs, desOutputs);
-
-            }*/
 
             // testavimas - jeigu teisingai atpazista tai paleidziam treniravima.
-            for (int m = 0; m < testDir.Length; m++)
-            {
-                var maker = new InputMaker(File.ReadAllLines(testDir[m])[1]);
-                var author = File.ReadAllLines(testDir[m])[0];
-                author = author.Replace(";", "");
-                author = author.Replace(",", "");
-                var inputs = maker.Inputs;
 
-                int index = 999;
-                for (int y = 0; y < authors.Length; y++)
+            foreach (var item in testData)
+            {
+                var outputs = NeuralNet.Run(item.inputs);
+
+                Console.WriteLine("-- {0}", Authors[item.outputs.ToList().IndexOf(1)]);
+                Dictionary<string, double> outputsDict = new Dictionary<string, double>();
+
+
+                for (int i = 0; i < outputs.Length; i++)
                 {
-                    if (authors[y] == author)
-                        index = y; //Neuron index of the right author
+                    outputsDict.Add(Authors[i], outputs[i]);
                 }
-                var outputs = NeuralNet.Run(inputs);
-                if (index != 999)
+                foreach (var item2 in outputsDict.OrderByDescending(x => x.Value))
                 {
-                    if (outputs.Max() == outputs[index])
-                    {
-                        double[] desOutputs = new double[authors.Length];
-                        NeuralNet.Train(inputs, desOutputs);
-                        Console.WriteLine("Success: {0} -> {1}", outputs[index], authors[index]);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Failure: {0} -> {1}", outputs[index], testDir[m]);
-                    }
+                    Console.WriteLine("{0}: {1}", item2.Key, item2.Value);
                 }
+
+                Console.WriteLine("====================================");
             }
+
+
 
             Console.ReadLine();
         }
-        static void Shuffle<T>(T[] array)
+        static void Shuffle(List<InputData> array)
         {
-            int n = array.Length;
+            int n = array.Count;
             for (int i = 0; i < n; i++)
             {
                 // Use Next on random instance with an argument.
                 // ... The argument is an exclusive bound.
                 //     So we will not go past the end of the array.
                 int r = i + _random.Next(n - i);
-                T t = array[r];
+                InputData t = array[r];
                 array[r] = array[i];
                 array[i] = t;
             }
+        }
+
+        // Not needed anymore, use data.zip
+        static void DownloadAnnotations()
+        {
+            var trainPath = "Train";
+            var testPath = "Test";
+
+            var annoFilePrefix = "Anno";
+            int c = 0;
+
+            foreach (var item in Directory.GetFiles(trainPath))
+            {
+                Annotations.OpenFile_Download_Annotate_SaveFile(item, annoFilePrefix + item);
+                Console.Write("{0}| ", c++);
+            }
+            foreach (var item in Directory.GetFiles(testPath))
+            {
+                Annotations.OpenFile_Download_Annotate_SaveFile(item, annoFilePrefix + item);
+                Console.Write("{0}| ", c++);
+            }
+
         }
     }
 }

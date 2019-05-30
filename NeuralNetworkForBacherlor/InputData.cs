@@ -16,7 +16,8 @@ namespace NeuralNetworkForBacherlor
         public string ReadableInputs { get; set; }
         public string InputFileName { get; set; }
         public string AnnoFileName { get; set; }
-
+        public static List<int> Long = new List<int> { };
+        public static List<int> Short = new List<int> { };
         public InputData(string filename, string annoFilePrefix)
         {
             InputFileName = filename;

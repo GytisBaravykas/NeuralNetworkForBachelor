@@ -1,18 +1,15 @@
-﻿using RestSharp;
-using RestSharp.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace NeuralNetworkForBacherlor
 {
     public class Program
     {
         //TODO: add čekuolis files
-        public static string[] Authors = new string[] {"justina maciūnaitė",
+        public static string[] Authors = new string[] {"algimantas čekuolis",
+                                                "justina maciūnaitė",
                                                 "edmundas jakilaitis",
                                                 "viktorija chockevičiūtė",
                                                 "miglė lopetaitė",
@@ -21,61 +18,62 @@ namespace NeuralNetworkForBacherlor
                                                 "viktorija vilcanaitė",
                                                 "neringa mikėnaitė",
                                                 "žiedūnė juškytė",
-                                                "arnas mazėtis" };
+                                                "arnas mazėtis"
+                                                //"other"
+        };
         static Random _random = new Random();
-
         static void Main(string[] args)
         {
             var trainPath = "Train";
             var testPath = "Test";
             var annoFilePrefix = "Anno";
+            var unSeenPath = "UnSeen";
 
-
+            /*var dir = Directory.GetFiles(unSeenPath);
+            var anno = Directory.GetFiles(annoFilePrefix+unSeenPath);
+            for(int num=0;num<dir.Length;num++)
+            {
+                Annotations.OpenFile_Download_Annotate_SaveFile(dir[num], anno[num]);
+            }*/
+            
             InputDataList trainData = new InputDataList(trainPath, annoFilePrefix);
             InputDataList testData = new InputDataList(testPath, annoFilePrefix);
+            InputDataList unSeenData = new InputDataList(unSeenPath, annoFilePrefix);
 
+
+            //TEST
             Shuffle(trainData);
-
-            NeuralNetwork NeuralNet = new NeuralNetwork(0.001, new int[3] { 179, 5, Authors.Length });
-            //179 input , 5 hidden , 11 output
-
-
-            for (int i = 0; i < 1000; i++)
+            var inputsD = trainData.Select(x => x.inputs.ToArray()).ToList();
+            var outputsD = trainData.Select(x => x.outputs.ToArray()).ToList();
+            //var hidden = new List<int> { 5, 10, 20, 30 };
+            var hidden = new List<int> {1000,2000,3000};
+            foreach (var neurons in hidden)
             {
-                if (i % 100 == 0)
+                var tests = new List<string> { };
+                for (int sk = 0; sk < 10; sk++)
                 {
-                    Console.WriteLine("Training set {0}.", i);
+                    Shuffle(trainData);
+                    var inputsT = trainData.Select(x => x.inputs.ToArray()).ToList();
+                    var outputsT = trainData.Select(x => x.outputs.ToArray()).ToList();
+                    var network = new New.NeuralNetwork(inputsT, outputsT, new int[1] { 20 }, 0.15,
+            0.3, 0.1, -7, 5);
+                    var train = network.run(neurons, 0).Split(" ");
+
+                    Shuffle(testData);
+                    var inputsV = testData.Select(x => x.inputs.ToArray()).ToList();
+                    var outputsV = testData.Select(x => x.outputs.ToArray()).ToList();
+                    var test = network.test(inputsV, outputsV);
+                    tests.Add(test);
                 }
-                foreach (var item in trainData)
+                using (StreamWriter wr = new StreamWriter("IterAcc" + neurons + ".txt"))
                 {
-                    NeuralNet.Train(item);
+                    foreach (var item in tests)
+                    {
+                        wr.WriteLine(item);
+                    }
                 }
             }
-
-            // testavimas - jeigu teisingai atpazista tai paleidziam treniravima.
-
-            foreach (var item in testData)
-            {
-                var outputs = NeuralNet.Run(item.inputs);
-
-                Console.WriteLine("-- {0}", Authors[item.outputs.ToList().IndexOf(1)]);
-                Dictionary<string, double> outputsDict = new Dictionary<string, double>();
-
-
-                for (int i = 0; i < outputs.Length; i++)
-                {
-                    outputsDict.Add(Authors[i], outputs[i]);
-                }
-                foreach (var item2 in outputsDict.OrderByDescending(x => x.Value))
-                {
-                    Console.WriteLine("{0}: {1}", item2.Key, item2.Value);
-                }
-
-                Console.WriteLine("====================================");
-            }
-
-
-
+            Console.WriteLine();
             Console.ReadLine();
         }
         static void Shuffle(List<InputData> array)
